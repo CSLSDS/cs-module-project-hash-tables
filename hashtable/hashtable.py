@@ -21,7 +21,14 @@ class HashTable:
     """
 
     def __init__(self, capacity):
-        # Your code here
+        # check if below min capacity; if True, force min capacity
+        if capacity < MIN_CAPACITY:
+            raise(ValueError(f'capacity must be >= {MIN_CAPACITY}; setting to min ({MIN_CAPACITY}).'))
+            self.capacity = MIN_CAPACITY
+        #   else set self.capacity = capacity arg
+        else:
+            self.capacity = capacity
+        self.data = [None] * self.capacity
 
 
     def get_num_slots(self):
@@ -34,17 +41,16 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        return len(self.data) # capacity?
 
 
-    def get_load_factor(self):
+    def get_load_factor(self, value:float):
         """
         Return the load factor for this hash table.
 
         Implement this.
         """
-        # Your code here
-
+        pass
 
     def fnv1(self, key):
         """
@@ -52,9 +58,17 @@ class HashTable:
 
         Implement this, and/or DJB2.
         """
+        # key_codes = key.encode()
 
-        # Your code here
+        # FNV_PRIME = 1099511628211
+        # hash = 14695981039346656037
+        # maxint = 2 ** 32
+        # for x in key:
+        #     temp = hash ** ord(x)
+        #     hash = (hash * FNV_PRIME) % maxint
 
+        #return hash & 0xffffffffffffffff
+        pass
 
     def djb2(self, key):
         """
@@ -62,8 +76,12 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
-        # Your code here
+        hash = 5381
 
+        for st in key:
+            hash = (((hash << 5) + hash) + ord(st))
+
+        return hash & 0xffffffff  # return 32 bit version
 
     def hash_index(self, key):
         """
@@ -81,7 +99,8 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        ix = self.hash_index(key)
+        self.data[ix] = value
 
 
     def delete(self, key):
@@ -92,8 +111,9 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        delete_ix = self.hash_index(key)
 
+        self.data[delete_ix] = None
 
     def get(self, key):
         """
@@ -103,18 +123,31 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        ix = self.hash_index(key)
+        hash_entry = self.data[ix]
+        if hash_entry != None:
+            return self.data[ix]
+        else:
+            return None
 
 
-    def resize(self, new_capacity):
-        """
-        Changes the capacity of the hash table and
-        rehashes all key/value pairs.
+    # def resize(self, new_capacity):
+    #     """
+    #     Changes the capacity of the hash table and
+    #     rehashes all key/value pairs.
 
-        Implement this.
-        """
-        # Your code here
+    #     Implement this.
+    #     """
+    #     self.capacity *=2
 
+    #     prior_table = self.table_copy()
+
+    #     self.table = [None] * self.capacity
+
+    #     for i in range(len(prior_table)):
+    #         prior_hash = prior_table[i]
+    #         while prior_hash:
+    #             self.put(prior_hash.key, prior_hash.value)
 
 
 if __name__ == "__main__":
@@ -140,14 +173,14 @@ if __name__ == "__main__":
         print(ht.get(f"line_{i}"))
 
     # Test resizing
-    old_capacity = ht.get_num_slots()
-    ht.resize(ht.capacity * 2)
-    new_capacity = ht.get_num_slots()
+    #old_capacity = ht.get_num_slots()
+    #ht.resize(ht.capacity * 2)
+    #new_capacity = ht.get_num_slots()
 
-    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    #print(f"\nResized from {old_capacity} to {new_capacity}.\n")
 
     # Test if data intact after resizing
-    for i in range(1, 13):
-        print(ht.get(f"line_{i}"))
+    # for i in range(1, 13):
+    #     print(ht.get(f"line_{i}"))
 
     print("")
