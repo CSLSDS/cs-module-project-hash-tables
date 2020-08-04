@@ -7,17 +7,13 @@ class HashTableEntry:
         self.value = value
         self.next = None
 
-
 # Hash table can't have fewer than this many slots
 MIN_CAPACITY = 8
 
-
 class HashTable:
     """
-    A hash table that with `capacity` buckets
+    A hash table with `capacity` buckets
     that accepts string keys
-
-    Implement this.
     """
 
     def __init__(self, capacity):
@@ -25,23 +21,38 @@ class HashTable:
         if capacity < MIN_CAPACITY:
             raise(ValueError(f'capacity must be >= {MIN_CAPACITY}; setting to min ({MIN_CAPACITY}).'))
             self.capacity = MIN_CAPACITY
+            self.load_factor = 0.0
         #   else set self.capacity = capacity arg
         else:
             self.capacity = capacity
-        self.data = [None] * self.capacity
+        self.data = [HashTableEntry(None, None) for _ in range(capacity)]
+        self.head = None
+        self.load_factor = 0.0
+        
+    def find(self, value):
+        cur = self.head
+        
+        while cur is not None:
+            if cur.value == value:
+                return cur
+            
+            cur = cur.next
 
+            # if we get here, we didn't find it
+            return None # let's say so
+        
+    def insert_at_head(self, node):
+        node.next = self.head
+        self.head = node
 
     def get_num_slots(self):
         """
         Return the length of the list you're using to hold the hash
         table data. (Not the number of items stored in the hash table,
         but the number of slots in the main list.)
-
         One of the tests relies on this.
-
-        Implement this.
         """
-        return len(self.data) # capacity?
+        return self.capacity
 
 
     def get_load_factor(self, value:float):
@@ -50,7 +61,12 @@ class HashTable:
 
         Implement this.
         """
-        pass
+        if value < self.load_factor and value < 0.2 and self.capacity > MIN_CAPACITY:
+            self.resize(max((self.capacity + 1 )//2, MIN_CAPACITY))
+        elif value > self.load_factor and value > 0.7:
+            self.resize(self.capacity * 2)
+        else:
+            self.load_factor = value
 
     def fnv1(self, key):
         """
@@ -94,61 +110,84 @@ class HashTable:
     def put(self, key, value):
         """
         Store the value with the given key.
-
         Hash collisions should be handled with Linked List Chaining.
-
-        Implement this.
         """
         ix = self.hash_index(key)
-        self.data[ix] = value
-
+        cur = self.data[ix]
+        if cur.key == None: # if cur empty
+            cur.key = key
+            cur.value = value
+        else: # collision
+            while cur != None:
+                if key == cur.key:
+                    prior = cur.value
+                    cur.value = value
+                    return prior
+                prev = cur
+                cur = cur.next
+            # otherwise EOL
+            prev.next = HashTableEntry(key, value)
+        self.load_factor +=  (1/self.capacity)
 
     def delete(self, key):
         """
         Remove the value stored with the given key.
-
-        Print a warning if the key is not found.
-
-        Implement this.
-        """
-        delete_ix = self.hash_index(key)
-
-        self.data[delete_ix] = None
-
+        Print a warning if the key is not found."""
+        ix = self.hash_index(key)
+        cur = self.data[ix]
+        value = None
+        
+        if cur.key == key:
+            value = cur.value
+            if cur.next is None:
+                cur.key = None
+                cur.value = None
+            else:
+                self.data[ix] = cur.next
+        
+        else:
+            prev = cur
+            cur = cur.next
+            
+            while cur != None:
+                if key == cur.key:
+                    value = cur.value
+                    prev.next = cur.next
+                prev = cur
+                cur = cur.next
+            
+        if value != None:
+            self.load_factor -= (1/self.capacity)
+        
+        return value
+    
     def get(self, key):
         """
         Retrieve the value stored with the given key.
-
         Returns None if the key is not found.
-
-        Implement this.
         """
         ix = self.hash_index(key)
-        hash_entry = self.data[ix]
-        if hash_entry != None:
-            return self.data[ix]
+        cur = self.data[ix]
+        while cur != None:
+            if key == cur.key:
+                return cur.value
+            cur = cur.next
         else:
             return None
 
 
-    # def resize(self, new_capacity):
-    #     """
-    #     Changes the capacity of the hash table and
-    #     rehashes all key/value pairs.
-
-    #     Implement this.
-    #     """
-    #     self.capacity *=2
-
-    #     prior_table = self.table_copy()
-
-    #     self.table = [None] * self.capacity
-
-    #     for i in range(len(prior_table)):
-    #         prior_hash = prior_table[i]
-    #         while prior_hash:
-    #             self.put(prior_hash.key, prior_hash.value)
-
+    def resize(self, new_capacity):
+        """
+        Changes the capacity of the hash table and
+        rehashes all key/value pairs.
+        """
+        # store original data
+        prior = self.data
+        for slot in prior:
+            cur = slot
+            while cur != None and cur.key != None:
+                self.put(cur.key, cur.value)
+                cur = cur.next
 
 if __name__ == "__main__":
     ht = HashTable(8)
