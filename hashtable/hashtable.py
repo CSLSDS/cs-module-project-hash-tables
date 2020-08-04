@@ -175,7 +175,6 @@ class HashTable:
         else:
             return None
 
-
     def resize(self, new_capacity):
         """
         Changes the capacity of the hash table and
@@ -183,11 +182,13 @@ class HashTable:
         """
         # store original data
         prior = self.data
+        self.__init__(new_capacity)
         for slot in prior:
             cur = slot
             while cur != None and cur.key != None:
                 self.put(cur.key, cur.value)
                 cur = cur.next
+            
 
 if __name__ == "__main__":
     ht = HashTable(8)
