@@ -1,5 +1,17 @@
 def word_count(s):
-    # Your code here
+    ignore = ['"',':',';',',','.','-','+','=','/','\\','|','[',']','{','}','(',
+    ')','*','^','&']
+    counts = {}
+    s = ''.join(ch for ch in s if ch not in ignore)
+    words = s.lower().split()
+    for word in words:
+        if word not in counts:
+            counts[word] = 1
+        else:
+            counts[word] += 1
+
+    return counts
+
 
 
 
