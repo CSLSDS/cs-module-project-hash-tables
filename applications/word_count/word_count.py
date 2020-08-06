@@ -12,9 +12,6 @@ def word_count(s):
 
     return counts
 
-
-
-
 if __name__ == "__main__":
     print(word_count(""))
     print(word_count("Hello"))
