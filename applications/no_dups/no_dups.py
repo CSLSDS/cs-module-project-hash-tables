@@ -1,5 +1,10 @@
 def no_dups(s):
-    # Your code here
+    words = s.split()
+    wordset = []
+    for word in words:
+        if word not in wordset:
+            wordset.append(word)
+    return ' '.join(wordset)
 
 
 
